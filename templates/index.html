@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Search by Face</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      button {
+        cursor: pointer;
+        padding: 10px 14px;
+      }
+      .error {
+        color: #b00020;
+        margin-top: 12px;
+      }
+      .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      .results img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+      video,
+      canvas {
+        width: 320px;
+        height: 240px;
+        background: #111;
+        border-radius: 8px;
+      }
+      canvas {
+        display: none;
+      }
+      .hint {
+        color: #555;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Find My Photos</h1>
+    <p class="hint">
+      Upload a portrait or use live camera capture. The app checks all images in
+      your <strong>photos/</strong> folder and returns matching faces.
+    </p>
+
+    <div class="card">
+      <form method="post" enctype="multipart/form-data">
+        <div class="row">
+          <label for="photo">Upload Photo:</label>
+          <input type="file" id="photo" name="photo" accept="image/*" />
+        </div>
+
+        <hr />
+
+        <div class="row">
+          <button type="button" id="start-camera">Start Camera</button>
+          <button type="button" id="capture">Capture Snapshot</button>
+          <span class="hint">(use capture if you prefer live photo)</span>
+        </div>
+
+        <div class="row" style="margin-top: 10px">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas" width="320" height="240"></canvas>
+        </div>
+
+        <input type="hidden" name="captured_photo" id="captured_photo" />
+
+        <div style="margin-top: 14px">
+          <button type="submit">Search Matching Photos</button>
+        </div>
+      </form>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Results</h2>
+      <p class="hint">Scanned photos in folder: {{ photos_count }}</p>
+      {% if matches and matches|length > 0 %}
+      <div class="results">
+        {% for rel in matches %}
+        <a href="/photos/{{ rel }}" target="_blank" rel="noopener noreferrer">
+          <img src="/photos/{{ rel }}" alt="match {{ loop.index }}" />
+        </a>
+        {% endfor %}
+      </div>
+      {% elif request.method == 'POST' and not error %}
+      <p>No matching photos found.</p>
+      {% else %}
+      <p>Submit a photo to search.</p>
+      {% endif %}
+    </div>
+
+    <script>
+      const startCameraBtn = document.getElementById("start-camera");
+      const captureBtn = document.getElementById("capture");
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      const hiddenInput = document.getElementById("captured_photo");
+
+      let stream;
+
+      startCameraBtn.addEventListener("click", async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+        } catch (err) {
+          alert("Could not access camera. Please allow camera permissions.");
+        }
+      });
+
+      captureBtn.addEventListener("click", () => {
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        hiddenInput.value = canvas.toDataURL("image/png");
+        alert("Snapshot captured. Now click 'Search Matching Photos'.");
+      });
+    </script>
+  </body>
+</html>
