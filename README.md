@@ -86,3 +86,24 @@ Files used by Heroku:
 
 - This app expects images in `photos/` at runtime.
 - If you need persistent shared storage for uploaded/managed photos, attach a volume/object storage and point the app to it.
+
+## Troubleshooting deploy errors
+
+If you see an error like:
+
+- `Failed to build dlib`
+- `CMake is not installed on your system`
+- `uv sync ... failed while building dlib`
+
+Root cause:
+- `face-recognition` depends on `dlib`, and `dlib` needs native build tools (`cmake`, compiler, BLAS/LAPACK headers).
+
+Fix by platform:
+
+- Render: already handled in `render.yaml` build command (installs `cmake`, `build-essential`, `python3-dev`, `libopenblas-dev`, `liblapack-dev`).
+- Railway: `nixpacks.toml` installs same packages via `aptPkgs`.
+- Heroku: use Apt buildpack + `Aptfile` before Python buildpack.
+
+If your platform still tries `uv sync` and fails:
+- Ensure it is building from this repo root (so `render.yaml` / `nixpacks.toml` / `Aptfile` are detected).
+- Re-deploy after clearing build cache.

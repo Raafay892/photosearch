@@ -4,6 +4,8 @@ services:
     env: python
     plan: free
     buildCommand: |
+      apt-get update
+      apt-get install -y cmake build-essential python3-dev libopenblas-dev liblapack-dev
       pip install -r requirements.txt
     startCommand: python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app
     autoDeploy: true
