@@ -1,5 +1,11 @@
+[variables]
+NIXPACKS_PYTHON_PACKAGE_MANAGER = "pip"
+
 [phases.setup]
 aptPkgs = ["cmake", "build-essential", "python3-dev", "libopenblas-dev", "liblapack-dev"]
+
+[phases.install]
+cmds = ["python -m pip install --upgrade pip", "python -m pip install -r requirements.txt"]
 
 [start]
 cmd = "python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app"

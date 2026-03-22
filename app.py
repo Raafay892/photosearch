@@ -373,7 +373,12 @@ def serve_photo(relative_path: str):
     if not file_path.exists() or not file_path.is_file():
         abort(404)
 
-    return send_file(file_path)
+    download_flag = request.args.get("download", "0").lower() in {"1", "true", "yes"}
+    return send_file(
+        file_path,
+        as_attachment=download_flag,
+        download_name=file_path.name if download_flag else None,
+    )
 
 
 @app.route("/all-photos")

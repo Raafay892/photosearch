@@ -50,8 +50,8 @@ Open: `http://127.0.0.1:5000`
 
 - Push this repo to GitHub.
 - In Render, create a **Web Service** from the repo.
-- Render will use `render.yaml` automatically.
-- Start command used: `python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app`
+- Render will use `render.yaml` automatically (Docker mode).
+- Build uses `Dockerfile`, so native tools (`cmake`, compiler, BLAS/LAPACK) are guaranteed.
 
 Why this works well here:
 - Flask supported directly
@@ -63,7 +63,8 @@ Why this works well here:
 - Push this repo to GitHub.
 - In Railway, create a new project from the repo.
 - Railway will read `nixpacks.toml` and install required native packages.
-- App starts with Gunicorn command from `nixpacks.toml`.
+- `nixpacks.toml` is configured to use `pip` instead of `uv`.
+- If Railway still uses `uv`, deploy using the `Dockerfile` path.
 
 Why this works well here:
 - Very simple setup
@@ -107,3 +108,4 @@ Fix by platform:
 If your platform still tries `uv sync` and fails:
 - Ensure it is building from this repo root (so `render.yaml` / `nixpacks.toml` / `Aptfile` are detected).
 - Re-deploy after clearing build cache.
+- Prefer Docker deploy (uses `Dockerfile`) to fully bypass `uv sync` behavior.
