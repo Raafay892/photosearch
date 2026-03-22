@@ -5,140 +5,428 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Photo Search by Face</title>
     <style>
+      :root {
+        --bg: #f3f6fb;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --line: #e2e8f0;
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --danger: #dc2626;
+        --radius: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        max-width: 1000px;
-        margin: 32px auto;
-        padding: 0 16px;
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 220px);
       }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 38px);
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .muted {
+        color: var(--muted);
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+
       .card {
-        border: 1px solid #ddd;
-        border-radius: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
         padding: 20px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
+        background: var(--card);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
       }
+
       .row {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
         align-items: center;
       }
-      button {
-        cursor: pointer;
-        padding: 10px 14px;
+
+      .split {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 16px;
       }
+
+      .label {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .file-input {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #f8fafc;
+      }
+
+      button,
+      .nav-link {
+        cursor: pointer;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      button {
+        background: var(--primary);
+        color: #fff;
+        transition: 0.2s ease;
+      }
+
+      button:hover {
+        background: var(--primary-dark);
+      }
+
+      .secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .secondary:hover {
+        background: #cbd5e1;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        background: #ffffff;
+        border: 1px solid var(--line);
+        color: #0f172a;
+        display: inline-flex;
+        align-items: center;
+      }
+
       .error {
-        color: #b00020;
+        color: var(--danger);
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 10px 12px;
         margin-top: 12px;
       }
+
       .results {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 14px;
       }
+
+      .tile {
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: #fff;
+        transition: transform 0.2s ease;
+      }
+
+      .tile:hover {
+        transform: translateY(-3px);
+      }
+
       .results img {
         width: 100%;
         height: 220px;
         object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #ccc;
       }
+
       video,
       canvas {
-        width: 320px;
-        height: 240px;
-        background: #111;
-        border-radius: 8px;
+        width: min(100%, 420px);
+        aspect-ratio: 4 / 3;
+        background: #0f172a;
+        border-radius: 12px;
+        border: 1px solid var(--line);
       }
+
       canvas {
         display: none;
       }
-      .hint {
-        color: #555;
+
+      .status {
+        color: #0f172a;
         font-size: 14px;
+        padding: 8px 10px;
+        background: #eff6ff;
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 6px 0 0;
+      }
+
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 16px 0;
+      }
+
+      @media (max-width: 900px) {
+        .split {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Find My Photos</h1>
-    <p class="hint">
-      Upload a portrait or use live camera capture. The app checks all images in
-      your <strong>photos/</strong> folder and returns matching faces.
-    </p>
-
-    <div class="card">
-      <form method="post" enctype="multipart/form-data">
-        <div class="row">
-          <label for="photo">Upload Photo:</label>
-          <input type="file" id="photo" name="photo" accept="image/*" />
+    <div class="container">
+      <div class="hero">
+        <div>
+          <h1>Find My Photos</h1>
+          <p class="muted">
+            Upload a portrait or use live camera capture. The app checks all images in
+            your <strong>photos/</strong> folder and returns matching faces.
+          </p>
         </div>
-
-        <hr />
-
-        <div class="row">
-          <button type="button" id="start-camera">Start Camera</button>
-          <button type="button" id="capture">Capture Snapshot</button>
-          <span class="hint">(use capture if you prefer live photo)</span>
-        </div>
-
-        <div class="row" style="margin-top: 10px">
-          <video id="video" autoplay playsinline></video>
-          <canvas id="canvas" width="320" height="240"></canvas>
-        </div>
-
-        <input type="hidden" name="captured_photo" id="captured_photo" />
-
-        <div style="margin-top: 14px">
-          <button type="submit">Search Matching Photos</button>
-        </div>
-      </form>
-
-      {% if error %}
-      <div class="error">{{ error }}</div>
-      {% endif %}
-    </div>
-
-    <div class="card">
-      <h2>Results</h2>
-      <p class="hint">Scanned photos in folder: {{ photos_count }}</p>
-      {% if matches and matches|length > 0 %}
-      <div class="results">
-        {% for rel in matches %}
-        <a href="/photos/{{ rel }}" target="_blank" rel="noopener noreferrer">
-          <img src="/photos/{{ rel }}" alt="match {{ loop.index }}" />
-        </a>
-        {% endfor %}
+        <a href="/all-photos" class="nav-link">View all photos</a>
       </div>
-      {% elif request.method == 'POST' and not error %}
-      <p>No matching photos found.</p>
-      {% else %}
-      <p>Submit a photo to search.</p>
-      {% endif %}
+
+      <div class="split">
+        <div class="card">
+          <form method="post" enctype="multipart/form-data" id="search-form">
+            <div class="row">
+              <label class="label" for="photo">Upload Photo</label>
+              <input class="file-input" type="file" id="photo" name="photo" accept="image/*" />
+            </div>
+
+            <hr />
+
+            <div class="row">
+              <button class="secondary" type="button" id="start-camera">Start Camera</button>
+              <button type="button" id="capture">Capture Snapshot</button>
+            </div>
+            <p class="hint">Tip: use capture for live photo search.</p>
+
+            <div class="row" style="margin-top: 12px">
+              <video id="video" autoplay playsinline muted></video>
+              <canvas id="canvas" width="640" height="480"></canvas>
+            </div>
+
+            <input type="hidden" name="captured_photo" id="captured_photo" />
+            <div class="status" id="status" style="margin-top: 10px">Start camera and capture, or upload a photo.</div>
+
+            <div style="margin-top: 14px">
+              <button type="submit">Search Matching Photos</button>
+            </div>
+          </form>
+
+          {% if error %}
+          <div class="error">{{ error }}</div>
+          {% endif %}
+        </div>
+
+        <div class="card">
+          <h2>Results</h2>
+          <p class="hint">Photos in folder: {{ photos_count }}</p>
+          <p class="hint">Indexed in cache: {{ indexed_count }}</p>
+          {% if matches and matches|length > 0 %}
+          <div class="results" style="margin-top: 12px">
+            {% for rel in matches %}
+            <a class="tile" href="/photos/{{ rel }}" target="_blank" rel="noopener noreferrer">
+              <img src="/photos/{{ rel }}" alt="match {{ loop.index }}" loading="lazy" />
+            </a>
+            {% endfor %}
+          </div>
+          {% elif request.method == 'POST' and not error %}
+          <p class="hint" style="margin-top: 12px">No matching photos found.</p>
+          {% else %}
+          <p class="hint" style="margin-top: 12px">Submit a photo to search.</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     <script>
       const startCameraBtn = document.getElementById("start-camera");
       const captureBtn = document.getElementById("capture");
+      const form = document.getElementById("search-form");
+      const photoInput = document.getElementById("photo");
       const video = document.getElementById("video");
       const canvas = document.getElementById("canvas");
       const hiddenInput = document.getElementById("captured_photo");
+      const statusEl = document.getElementById("status");
 
       let stream;
+      let snapshotCaptured = false;
+      let capturedBlob = null;
+      let capturedDataUrl = "";
+      let isProgrammaticSubmit = false;
+
+      function drawCurrentFrame() {
+        if (!video.srcObject || video.readyState < 2) {
+          return false;
+        }
+
+        const width = video.videoWidth || 640;
+        const height = video.videoHeight || 480;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.style.display = "block";
+        return true;
+      }
+
+      function canvasToBlob() {
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.95);
+        });
+      }
+
+      function assignBlobToFileInput(blob) {
+        if (!blob) return false;
+        try {
+          const file = new File([blob], "snapshot.jpg", { type: "image/jpeg" });
+          const transfer = new DataTransfer();
+          transfer.items.add(file);
+          photoInput.files = transfer.files;
+          return true;
+        } catch (err) {
+          return false;
+        }
+      }
+
+      async function captureSnapshot() {
+        const drew = drawCurrentFrame();
+        if (!drew) {
+          return false;
+        }
+
+        capturedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        capturedBlob = await canvasToBlob();
+        const assigned = assignBlobToFileInput(capturedBlob);
+
+        if (assigned) {
+          hiddenInput.value = "";
+        } else {
+          hiddenInput.value = capturedDataUrl;
+        }
+
+        snapshotCaptured = Boolean(hiddenInput.value);
+        statusEl.textContent = assigned
+          ? "Snapshot captured. Ready to search."
+          : "Snapshot captured (base64 mode). Ready to search.";
+        return assigned || snapshotCaptured;
+      }
 
       startCameraBtn.addEventListener("click", async () => {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+          });
           video.srcObject = stream;
+          await video.play();
+          statusEl.textContent = "Camera started. Capture a snapshot or upload a file.";
         } catch (err) {
-          alert("Could not access camera. Please allow camera permissions.");
+          statusEl.textContent = "Could not access camera. Please allow camera permissions.";
         }
       });
 
-      captureBtn.addEventListener("click", () => {
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        hiddenInput.value = canvas.toDataURL("image/png");
-        alert("Snapshot captured. Now click 'Search Matching Photos'.");
+      captureBtn.addEventListener("click", async () => {
+        if (!stream || !video.srcObject) {
+          statusEl.textContent = "Start camera first, then capture.";
+          return;
+        }
+
+        if (video.readyState < 2) {
+          await new Promise((resolve) => {
+            video.onloadeddata = () => resolve();
+          });
+        }
+
+        const ok = await captureSnapshot();
+        if (!ok) {
+          statusEl.textContent = "Snapshot failed. Please try again.";
+        }
+      });
+
+      photoInput.addEventListener("change", () => {
+        if (photoInput.files && photoInput.files.length > 0) {
+          if (photoInput.files[0] && !photoInput.files[0].name.startsWith("snapshot")) {
+            hiddenInput.value = "";
+            snapshotCaptured = false;
+            capturedBlob = null;
+            capturedDataUrl = "";
+            canvas.style.display = "none";
+          }
+          statusEl.textContent = "Image selected. Ready to search.";
+        }
+      });
+
+      form.addEventListener("submit", async (event) => {
+        if (isProgrammaticSubmit) {
+          return;
+        }
+
+        event.preventDefault();
+
+        let hasUpload = photoInput.files && photoInput.files.length > 0;
+        let hasSnapshot = hiddenInput.value && hiddenInput.value.length > 0;
+
+        if (hasUpload && hasSnapshot) {
+          hiddenInput.value = "";
+          hasSnapshot = false;
+        }
+
+        if (!hasUpload && !hasSnapshot && stream) {
+          statusEl.textContent = "Capturing live frame for search...";
+          hasSnapshot = await captureSnapshot();
+          hasUpload = photoInput.files && photoInput.files.length > 0;
+        }
+
+        if (!hasUpload && !hasSnapshot && snapshotCaptured && capturedDataUrl) {
+          hiddenInput.value = capturedDataUrl;
+          hasSnapshot = true;
+        }
+
+        if (!hasUpload && !hasSnapshot) {
+          statusEl.textContent = "Select upload or capture snapshot before searching.";
+          return;
+        }
+
+        isProgrammaticSubmit = true;
+        form.submit();
       });
     </script>
   </body>

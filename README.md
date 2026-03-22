@@ -34,3 +34,12 @@ Open: `http://127.0.0.1:5000`
 - If no face is detected in input image, it shows an error.
 - Face encodings are cached in `.face_index.pkl` so repeated searches are much faster.
 - If you add or edit photos, the cache updates automatically for changed files.
+- For speed, input images are resized before face encoding.
+
+## Hosting Performance Tips
+
+- Use a stable production profile from the same venv (example): `python -m gunicorn -w 1 --threads 1 -b 0.0.0.0:5000 app:app`
+- If your `photos/` folder is large, add a higher timeout: `python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:5000 app:app`
+- Keep `photos/` on fast SSD storage.
+- First request may be slower while index warmup happens; later searches use an in-memory encoding matrix.
+- Index refresh is throttled to avoid frequent full-folder rescans.
