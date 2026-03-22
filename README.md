@@ -43,3 +43,46 @@ Open: `http://127.0.0.1:5000`
 - Keep `photos/` on fast SSD storage.
 - First request may be slower while index warmup happens; later searches use an in-memory encoding matrix.
 - Index refresh is throttled to avoid frequent full-folder rescans.
+
+## Deploy Options
+
+### Render
+
+- Push this repo to GitHub.
+- In Render, create a **Web Service** from the repo.
+- Render will use `render.yaml` automatically.
+- Start command used: `python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app`
+
+Why this works well here:
+- Flask supported directly
+- Native Python package builds (CMake/dlib) supported
+- Easy GitHub auto-deploy
+
+### Railway
+
+- Push this repo to GitHub.
+- In Railway, create a new project from the repo.
+- Railway will read `nixpacks.toml` and install required native packages.
+- App starts with Gunicorn command from `nixpacks.toml`.
+
+Why this works well here:
+- Very simple setup
+- Good support for Python apps
+
+### Heroku (classic)
+
+- Push this repo to GitHub.
+- Create Heroku app and connect your repo.
+- Ensure Python buildpack is enabled.
+- Add Heroku Apt buildpack (before Python) to use `Aptfile` for native deps.
+- Heroku runs `Procfile` automatically.
+
+Files used by Heroku:
+- `Procfile`
+- `runtime.txt`
+- `Aptfile`
+
+## Important for all platforms
+
+- This app expects images in `photos/` at runtime.
+- If you need persistent shared storage for uploaded/managed photos, attach a volume/object storage and point the app to it.

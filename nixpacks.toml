@@ -1,0 +1,5 @@
+[phases.setup]
+aptPkgs = ["cmake", "build-essential", "python3-dev", "libopenblas-dev", "liblapack-dev"]
+
+[start]
+cmd = "python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app"
