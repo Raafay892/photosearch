@@ -77,6 +77,7 @@ Why this works well here:
 - Ensure Python buildpack is enabled.
 - Add Heroku Apt buildpack (before Python) to use `Aptfile` for native deps.
 - Heroku runs `Procfile` automatically.
+- Use platform-provided `PORT` environment variable (do not use `${PORT:-5000}` syntax on platforms that don't shell-expand it).
 
 Files used by Heroku:
 - `Procfile`
