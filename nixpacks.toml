@@ -8,4 +8,4 @@ aptPkgs = ["cmake", "build-essential", "python3-dev", "libopenblas-dev", "liblap
 cmds = ["python -m pip install --upgrade pip", "python -m pip install -r requirements.txt"]
 
 [start]
-cmd = "python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:$PORT app:app"
+cmd = "python -m gunicorn -c gunicorn.conf.py app:app"

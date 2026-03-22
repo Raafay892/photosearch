@@ -38,8 +38,7 @@ Open: `http://127.0.0.1:5000`
 
 ## Hosting Performance Tips
 
-- Use a stable production profile from the same venv (example): `python -m gunicorn -w 1 --threads 1 -b 0.0.0.0:5000 app:app`
-- If your `photos/` folder is large, add a higher timeout: `python -m gunicorn -w 1 --threads 1 --timeout 180 -b 0.0.0.0:5000 app:app`
+- Use a stable production profile from the same venv: `python -m gunicorn -c gunicorn.conf.py app:app`
 - Keep `photos/` on fast SSD storage.
 - First request may be slower while index warmup happens; later searches use an in-memory encoding matrix.
 - Index refresh is throttled to avoid frequent full-folder rescans.
@@ -63,7 +62,7 @@ Why this works well here:
 - Push this repo to GitHub.
 - In Railway, create a new project from the repo.
 - Railway will read `nixpacks.toml` and install required native packages.
-- `nixpacks.toml` is configured to use `pip` instead of `uv`.
+- `nixpacks.toml` is configured to use `pip` instead of `uv` and runs `python -m gunicorn -c gunicorn.conf.py app:app`.
 - If Railway still uses `uv`, deploy using the `Dockerfile` path.
 
 Why this works well here:
@@ -77,7 +76,7 @@ Why this works well here:
 - Ensure Python buildpack is enabled.
 - Add Heroku Apt buildpack (before Python) to use `Aptfile` for native deps.
 - Heroku runs `Procfile` automatically.
-- Use platform-provided `PORT` environment variable (do not use `${PORT:-5000}` syntax on platforms that don't shell-expand it).
+- `Procfile` uses `gunicorn.conf.py`, which reads `PORT` in Python (no shell expansion needed).
 
 Files used by Heroku:
 - `Procfile`
